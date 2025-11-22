@@ -1,0 +1,319 @@
+/* File: assets/css/theme-neon.css */
+/* CSS cho toàn bộ theme "Neon Vàng Kim" */
+
+:root {
+    --gold: #ffd76a;
+    --gold-soft: rgba(255, 215, 106, .18);
+    --ink: #0c1117;
+    --ink-2: #131a22;
+    --line: rgba(255, 255, 255, .06);
+    --muted: #8b98a5;
+    --radius: 16px;
+}
+
+body {
+    background: linear-gradient(180deg, #0b0f14, #0e141b);
+    color: #dfe7f1; /* Đặt màu chữ mặc định cho toàn trang */
+    font-family: 'Inter', sans-serif; /* Thêm font-family từ header */
+}
+
+/* Ghi đè style Bootstrap cơ bản */
+.card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #121823;
+    color: #dfe7f1;
+}
+.card-header {
+    background: linear-gradient(180deg, #131b25, #101720);
+    border-bottom: 1px solid var(--line);
+    color: #e9eef6;
+}
+.form-control, .form-select {
+    background: #0f1621;
+    color: #dfe7f1;
+    border: 1px solid var(--line);
+}
+.form-control::placeholder { color: #9fb0c2; }
+.form-control:focus, .form-select:focus {
+    background: #0f1621;
+    color: #dfe7f1;
+    border-color: var(--gold);
+    box-shadow: 0 0 14px rgba(255, 215, 106, .35);
+}
+
+.btn-primary {
+    background: linear-gradient(90deg, #e6b84a, #e8c865);
+    border: 0;
+    color: #121417;
+    font-weight: 700;
+}
+.btn-primary:hover {
+    filter: brightness(1.1);
+    color: #121417;
+}
+.btn-outline-primary {
+    border-color: var(--gold);
+    color: var(--gold);
+}
+.btn-outline-primary:hover {
+    background: var(--gold);
+    color: #121417;
+    box-shadow: 0 0 14px rgba(255, 215, 106, .35);
+}
+
+.filter-title {
+    font-weight: 700;
+    letter-spacing: .3px;
+    color: #fff;
+}
+.sticky-top { position: sticky; }
+
+/* Product card (Style từ shop.jsp) */
+.card-product {
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.card-product:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, .35), inset 0 0 0 1px var(--gold-soft);
+    border-color: rgba(255, 215, 106, .25);
+}
+.product-card-img {
+    aspect-ratio: 1/1;
+    width: 100%;
+    object-fit: cover;
+    border-bottom: 1px solid var(--line);
+}
+.badge-hot {
+    background: rgba(255, 215, 106, .15);
+    color: var(--gold);
+    border: 1px solid var(--gold-soft);
+}
+.price-gold {
+    color: var(--gold);
+}
+
+/* Toolbar (Style từ shop.jsp) */
+.toolbar {
+    background: #0f1621;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: #dfe7f1;
+}
+.toolbar strong { color: #fff; }
+.toolbar .hint { color: var(--muted); }
+
+/* Pagination (Style từ shop.jsp) */
+.pagination .page-link {
+    background: #0f1621;
+    color: #dfe7f1;
+    border: 1px solid var(--line);
+}
+.pagination .page-item.active .page-link {
+    background: linear-gradient(90deg, #e6b84a, #e8c865);
+    color: #121417;
+    border-color: transparent;
+    box-shadow: 0 0 14px rgba(255, 215, 106, .35);
+}
+.pagination .page-link:hover { filter: brightness(1.1); }
+
+/* Neon underline links (Style từ shop.jsp) */
+.neon-link {
+    position: relative;
+    text-decoration: none;
+    color: #cfe0f2;
+}
+.neon-link:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform .2s ease;
+    box-shadow: 0 0 12px var(--gold);
+}
+.neon-link:hover { color: #fff; }
+.neon-link:hover:after { transform: scaleX(1); }
+
+/* =================================== */
+/* CSS MỚI CHO HOME.JSP (Dựa trên layout mới) */
+/* =================================== */
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    padding-top: 5rem; /* Bù cho header */
+}
+.hero-background {
+    position: absolute;
+    inset: 0;
+}
+.hero-background img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0, 0, 0, .8) 0%, rgba(12, 17, 23, .7) 50%, rgba(0, 0, 0, .85) 100%);
+    backdrop-filter: blur(2px);
+}
+.hero-content {
+    position: relative;
+    z-index: 10;
+}
+.hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 300;
+    line-height: 0.9;
+    margin-bottom: 2rem;
+}
+.hero-title .text-luxury-gold {
+    font-weight: 500;
+    background: linear-gradient(135deg, #f4d03f 0%, #d4af37 60%, #b7950b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 2px 4px rgba(255, 215, 106, .3));
+}
+.hero-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, .85);
+    max-width: 700px;
+    margin: 0 auto 2rem auto;
+}
+
+/* Stats Section */
+.stats-card {
+    background: #121823;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, .35);
+    border-color: rgba(255, 215, 106, .25);
+}
+.stats-card .stats-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+}
+.stats-card .stats-label {
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+/* Section Title */
+.section-title-wrapper {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+.section-title-wrapper .label {
+    color: var(--muted);
+    font-size: 0.9rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+.section-title-wrapper .title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.75rem;
+    font-weight: 400;
+    color: #fff;
+    margin-bottom: 1rem;
+}
+.section-title-wrapper .title .text-luxury-gold {
+    font-weight: 500;
+    background: linear-gradient(135deg, #f4d03f 0%, #d4af37 60%, #b7950b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 2px 4px rgba(255, 215, 106, .3));
+}
+.luxury-divider {
+    height: 2px;
+    width: 100px;
+    margin: 0 auto;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    box-shadow: 0 0 12px var(--gold);
+}
+
+/* Special Product / Services */
+.special-product-img {
+    width: 100%;
+    height: 500px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, .3);
+}
+.special-badge {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: #fff;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: .8rem;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, .3);
+}
+.price-tag {
+    background: linear-gradient(135deg, #f4d03f, #d4af37);
+    color: #121417;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    letter-spacing: .5px;
+    box-shadow: 0 4px 12px rgba(255, 215, 106, .3);
+}
+
+.service-card {
+    padding: 2rem;
+    text-align: center;
+}
+.service-card .service-icon {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, #f4d03f, #d4af37);
+    color: #121417;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 2rem;
+    margin: 0 auto 1.5rem auto;
+    box-shadow: 0 10px 20px rgba(255, 215, 106, .2);
+}
+
+/* Testimonials */
+.testimonial-card {
+    padding: 2rem;
+    height: 100%;
+}
+.testimonial-card p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    font-style: italic;
+    color: #dfe7f1;
+}

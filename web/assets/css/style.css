@@ -1,0 +1,296 @@
+/* File: assets/css/style.css (Thiết kế Tối giản & Tinh tế – giao diện SÁNG) */
+
+/* 1. Import Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap');
+
+/* 2. Biến màu (Root Variables) */
+:root {
+    --font-sans: 'Inter', sans-serif;
+    --font-serif: 'Playfair Display', serif;
+
+    --color-text: #212529;
+    --color-text-muted: #6c757d;
+    --color-primary: #b98b73;
+    --color-primary-dark: #a47b64;
+    --color-bg: #fdfcf9;       /* nền sáng nhẹ */
+    --color-bg-alt: #f8f9fa;
+    --color-border: #dee2e6;
+}
+
+/* 3. Layout tổng thể – luôn nền sáng */
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--color-bg); /* QUAN TRỌNG: nền sáng toàn trang */
+    color: var(--color-text);
+}
+
+/* Trang bọc để footer luôn dính đáy */
+.page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-bg);
+}
+
+main.content {
+    flex: 1 0 auto;
+}
+
+footer {
+    margin: 0;
+    padding: 2rem 0;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+main.content > *:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* 4. Typography */
+h1, h2, h3, h4, h5, h6,
+.display-3, .display-5 {
+    font-family: var(--font-serif);
+    font-weight: 700;
+}
+
+/* 5. Header / Navbar */
+.navbar {
+    background-color: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.navbar-brand {
+    font-family: var(--font-serif);
+    font-size: 1.75rem;
+    color: var(--color-text) !important;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    color: var(--color-text);
+    transition: color 0.3s ease;
+}
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    color: var(--color-primary);
+}
+
+/* 6. Buttons (Bootstrap Override) */
+.btn-primary {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+.btn-primary:hover {
+    background-color: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.btn-outline-primary {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+.btn-outline-primary:hover {
+    background-color: var(--color-primary);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+/* Biến thể nút luxury vàng */
+.btn-luxury {
+    border-radius: 999px;
+    padding: 0.7rem 1.6rem;
+    border: none;
+    font-weight: 600;
+    background: linear-gradient(135deg, #ffde9e, #b7864a);
+    color: #2b1e08;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+.btn-luxury:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 36px rgba(0,0,0,0.12);
+    filter: brightness(1.03);
+}
+
+/* 7. Product Card (shop / related products) */
+.card-product {
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.card-product:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.product-card-img-wrapper,
+.product-image-wrap {
+    overflow: hidden;
+    border-radius: 12px 12px 0 0;
+    position: relative;
+}
+
+.product-card-img,
+.product-image {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.card-product:hover .product-card-img,
+.card-product:hover .product-image {
+    transform: scale(1.06);
+}
+
+.card-product .card-title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.card-product .card-price,
+.price {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--color-primary);
+}
+
+/* 8. Quick actions icon trên ảnh */
+.quick-actions {
+    position:absolute;
+    right:12px;
+    bottom:12px;
+    display:flex;
+    gap:8px;
+}
+.qa-btn {
+    background:rgba(255,255,255,0.96);
+    border-radius:10px;
+    padding:8px;
+    display:grid;
+    place-items:center;
+    box-shadow:0 6px 18px rgba(0,0,0,0.06);
+    color:var(--color-text);
+    text-decoration:none;
+}
+
+/* 9. Forms */
+.form-control,
+.form-select {
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+}
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.25rem rgba(185, 139, 115, 0.25);
+}
+
+/* 10. Accordion (orders, FAQ, ...) */
+.accordion-item {
+    border-radius: 8px !important;
+    border: 1px solid var(--color-border);
+    background-color: #ffffff;
+}
+.accordion-button {
+    font-weight: 600;
+    border-radius: 8px !important;
+}
+.accordion-button:not(.collapsed) {
+    background-color: var(--color-bg-alt);
+    color: var(--color-primary);
+    box-shadow: none;
+}
+.accordion-button:focus {
+    box-shadow: 0 0 0 0.25rem rgba(185, 139, 115, 0.25);
+}
+
+/* 11. Pagination */
+.page-item .page-link {
+    color: var(--color-primary);
+    border-radius: 999px !important;
+    margin: 0 0.25rem;
+    border: none;
+}
+.page-item.active .page-link {
+    background-color: var(--color-primary);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(185, 139, 115, 0.3);
+}
+.page-item.disabled .page-link {
+    color: #adb5bd;
+}
+.page-link:hover {
+    background-color: var(--color-bg-alt);
+}
+
+/* 12. List Group (Account / Orders sidebar) */
+.list-group-item.active {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+.list-group-item-action:hover {
+    background-color: var(--color-bg-alt);
+    color: var(--color-primary);
+}
+
+/* 13. Hero Section (trang chủ – vẫn dùng ảnh tối nhưng overlay nhẹ) */
+.hero-section {
+    height: 75vh;
+    min-height: 500px;
+    background:
+        linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
+        url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1920&q=80')
+        no-repeat center center;
+    background-size: cover;
+    color: #fff;
+}
+.hero-section .display-3 {
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* 14. Footer */
+.footer-elegant {
+    background-color: var(--color-bg-alt);
+    color: var(--color-text-muted);
+    border-top: 1px solid var(--color-border);
+}
+.footer-elegant h5 {
+    font-family: var(--font-serif);
+    color: var(--color-text);
+}
+.footer-elegant .footer-link {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+.footer-elegant .footer-link:hover {
+    color: var(--color-primary);
+}

@@ -1,0 +1,182 @@
+/* NỘI DUNG MỚI CHO: luxe-policy.css */
+
+/* 1. Thiết lập chung */
+.container {
+    max-width: 1080px; /* Giữ nguyên max-width cho dễ đọc */
+}
+
+/* 2. Đồng bộ Breadcrumb */
+.luxe-breadcrumb {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    color: #6c757d; /* Giống text-muted */
+}
+.luxe-breadcrumb a {
+    text-decoration: none;
+    /* Giả định màu vàng từ theme .text-luxury-gold */
+    color: var(--gold5, #B48F2F); 
+}
+.luxe-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+/* 3. Đồng bộ Hero (Tiêu đề trang) */
+.luxe-hero {
+    margin-bottom: 2.5rem;
+}
+.luxe-hero .kicker {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #6c757d; /* text-muted */
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+.luxe-hero h1 {
+    /* Áp dụng font .font-playfair */
+    font-family: 'Playfair Display', serif;
+    /* Áp dụng màu .text-luxury-gold */
+    color: var(--gold5, #B48F2F);
+}
+.luxe-hero p {
+    font-size: 1.1rem;
+    color: #495057;
+}
+
+/* 4. ĐỒNG BỘ NỘI DUNG CHÍNH (QUAN TRỌNG NHẤT) */
+/* Áp dụng phong cách .card-luxury cho các khu vực nội dung */
+.luxe-section {
+    background-color: #FFFBF0; /* Màu nền vàng nhạt */
+    border: 1px solid #F7E8B5;  /* Viền vàng nhạt */
+    border-radius: 16px;        /* Bo góc 16px */
+    box-shadow: 0 4px 20px rgba(218, 165, 32, 0.1); /* Bóng mờ */
+    
+    padding: 1.75rem 2.25rem; /* Tăng padding cho đẹp */
+    margin-bottom: 1.5rem;    /* Khoảng cách giữa các card */
+}
+
+/* 5. Đồng bộ Grid (cho 2 cột) */
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+.grid-2 .luxe-section {
+    margin-bottom: 0; /* Xóa margin vì đã có grid gap */
+}
+
+/* 6. Đồng bộ các thẻ bên trong */
+.luxe-section h5 {
+    /* Áp dụng font .font-playfair */
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    color: #333;
+}
+
+.luxe-list, .timeline {
+    padding-left: 1.25rem;
+    margin-bottom: 1rem;
+    list-style-type: none; /* Bỏ dấu chấm mặc định */
+}
+.luxe-list li, .timeline .tl-item {
+    position: relative;
+    margin-bottom: 0.75rem;
+    color: #495057;
+    padding-left: 1.5rem; /* Thay thế dấu chấm */
+}
+/* Tạo dấu tick/vòng tròn kiểu "luxe" */
+.luxe-list li::before, .timeline .tl-item::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--gold4, #E8B422);
+    font-weight: 600;
+}
+.timeline .tl-item::before {
+    content: '›';
+    font-weight: 900;
+}
+
+/* 7. Đồng bộ Bảng (Table) */
+.luxe-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+.luxe-table .luxe-row td {
+    padding: 0.85rem 0.5rem;
+    /* Dùng viền vàng nhạt của theme */
+    border-bottom: 1px solid #F7E8B5; 
+}
+.luxe-table .luxe-row:last-child td {
+    border-bottom: none;
+}
+.luxe-tag {
+    /* Style lại giống .badge */
+    display: inline-block;
+    padding: 0.4em 0.75em;
+    font-size: .8em;
+    font-weight: 700;
+    line-height: 1;
+    color: #212529;
+    text-align: center;
+    border-radius: 0.35rem;
+    background-color: #f7e8b5; /* Màu vàng nhạt */
+    border: 1px solid #e9dcb1;
+}
+
+/* 8. Đồng bộ FAQ (Accordion) */
+.luxe-acc details {
+    /* Dùng viền vàng nhạt của theme */
+    border-bottom: 1px solid #F7E8B5; 
+    padding: 1rem 0;
+}
+.luxe-acc details:first-of-type {
+    padding-top: 0;
+}
+.luxe-acc details:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.luxe-acc summary {
+    font-weight: 600;
+    cursor: pointer;
+    color: #333;
+    list-style: none; /* Ẩn mũi tên mặc định */
+    position: relative;
+    padding-right: 1.5rem;
+}
+/* Tạo mũi tên tùy chỉnh */
+.luxe-acc summary::after {
+    content: '+';
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-weight: 400;
+    color: var(--gold5, #B48F2F);
+    font-size: 1.3rem;
+}
+.luxe-acc details[open] summary::after {
+    content: '−';
+}
+
+.luxe-acc .acc-body {
+    padding-top: 1rem;
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+/* 9. Responsive */
+@media (max-width: 767px) {
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+    .luxe-section {
+        padding: 1.25rem 1.5rem;
+    }
+}

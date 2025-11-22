@@ -1,0 +1,161 @@
+/* === Import Font Chữ "Luxury" === */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap');
+
+:root {
+  /* === ĐÃ THAY ĐỔI: Nền Sáng, Chữ Tối === */
+  --bg: #f0f2f5;       /* Nền xám rất nhạt (thay vì đen) */
+  --panel: #ffffff;     /* Nền panel trắng (thay vì xám tối) */
+  --ink: #111111;       /* Chữ chính màu đen (thay vì trắng) */
+  --muted: #555555;     /* Chữ phụ màu xám (thay vì xám nhạt) */
+  --line: #e5e5e5;      /* Viền/kẻ màu xám nhạt (thay vì vàng mờ) */
+  
+  /* === GIỮ NGUYÊN: Màu Vàng & Trạng Thái === */
+  --gold1: #f4d03f;
+  --gold2: #d4af37;
+  --ring: rgba(244, 208, 63, .25);
+  --ok: #22c55e;
+  --warn: #f59e0b;
+  --bad: #ef4444;
+
+  /* === Font Family (Giữ nguyên) === */
+  --font-serif: 'Cormorant Garamond', serif;
+  --font-sans: 'Inter', sans-serif;
+}
+
+body.admin {
+  background: var(--bg);
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+
+/* === Thẻ Card (Nền trắng) === */
+.luxe-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .07); /* Shadow nhạt hơn */
+}
+
+/* === Tiêu đề (Chữ đen) === */
+.luxe-title,
+.sidebar-brand {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: .2px;
+  color: var(--ink); /* Đổi thành màu đen */
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+}
+
+/* === ĐÃ SỬA: Chữ Vàng (Đổi thành màu vàng sậm, đọc được trên nền trắng) === */
+.text-gold {
+  color: #b8860b; /* Màu DarkGoldenRod, đọc được */
+}
+
+
+.luxe-chip {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #f9f9f9; /* Nền chip sáng */
+}
+
+/* === Bảng (Nền trắng, chữ đen) === */
+.table-luxe {
+  border-collapse: separate;
+  border-spacing: 0 4px; 
+}
+.table-luxe thead th {
+  color: var(--muted); /* Chữ xám */
+  font-weight: 700;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+.table-luxe tbody tr {
+  background: transparent; /* Nền trong suốt (vì panel đã trắng) */
+}
+.table-luxe tbody tr:hover {
+  background: #fcfcfc; /* Hơi xám khi hover */
+}
+.table-luxe tbody td {
+  border-top: 1px solid var(--line); /* Viền xám */
+  color: var(--ink); /* Chữ đen */
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.table-luxe tbody tr td:first-child { border-radius: 8px 0 0 8px; }
+.table-luxe tbody tr td:last-child { border-radius: 0 8px 8px 0; }
+
+/* === Nút Vàng (Giữ nguyên, vì đã là chữ đen nền vàng) === */
+.btn-gold {
+  border: none;
+  border-radius: 8px;
+  padding: .55rem 1.2rem;
+  font-weight: 700;
+  color: #1a1203;
+  background: linear-gradient(135deg, var(--gold1), var(--gold2));
+  transition: all 0.2s ease;
+}
+.btn-gold:hover {
+  opacity: 0.85;
+  box-shadow: 0 4px 15px rgba(212,175,55,.2);
+}
+
+/* === ĐÃ SỬA: Nút "Dark" (Giờ là nút "Sáng" phụ) === */
+.btn-dark {
+  border: 1px solid var(--line);
+  background: #f0f0f0; /* Nền xám nhạt */
+  color: #333; /* Chữ đen */
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.btn-dark:hover {
+  background: #e5e5e5; /* Hơi đậm khi hover */
+  border-color: #ccc;
+  color: #111;
+}
+
+/* === ĐÃ SỬA: Form "Dark" (Giờ là form "Sáng") === */
+.form-dark {
+  background: var(--panel); /* Nền trắng */
+  color: var(--ink); /* Chữ đen */
+  border: 1px solid var(--line);
+  border-radius: 8px; 
+}
+.form-dark:focus {
+  border-color: var(--gold2); /* Viền vàng khi focus (giữ nguyên) */
+  box-shadow: 0 0 0 3px var(--ring);
+  background-color: var(--panel);
+}
+
+/* === Badge (Giữ nguyên) === */
+.badge-ok, .badge-warn, .badge-bad {
+  border-radius: 6px; 
+  padding: .3rem .6rem;
+  font-weight: 700;
+  font-size: 12px;
+}
+.badge-ok { background: #16a34a26; border: 1px solid #22c55e50; color: #22c55e; }
+.badge-warn { background: #f59f0b26; border: 1px solid #f59e0b50; color: #f59e0b; }
+.badge-bad { background: #ef444426; border: 1px solid #ef444450; color: #ef4444; }
+
+/* === ĐÃ SỬA: Sidebar (Active đổi thành chữ vàng sậm) === */
+.admin-sidebar .nav-link.active {
+  color: #b8860b !important; /* Chữ vàng sậm (đọc được) */
+  font-weight: 700;
+  background: rgba(212,175,55,.1); /* Nền vàng mờ (giữ nguyên) */
+  border-left: 3px solid var(--gold2); /* Đổi border-left đậm hơn */
+  border-radius: 0 8px 8px 0;
+}
