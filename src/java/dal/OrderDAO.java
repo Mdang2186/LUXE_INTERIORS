@@ -303,5 +303,64 @@ public class OrderDAO extends DBContext {
         }
         return list;
     }
+// Cập nhật trạng thái theo quy trình, không cho quay ngược
+public boolean updateStatusFlow(int orderId, String newStatus) {
+    // Có thể dùng getOrderByIdWithItems hoặc hàm getOrderById tùy anh đang có
+    Order o = getOrderByIdWithItems(orderId);
+    if (o == null) return false;
+
+    String current = o.getStatus();
+
+    // kiểm tra xem có được chuyển current -> newStatus không
+    if (!canTransition(current, newStatus)) {
+        return false;
+    }
+
+    String sql = "UPDATE orders SET Status = ? WHERE OrderID = ?";
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        ps.setString(1, newStatus);
+        ps.setInt(2, orderId);
+        return ps.executeUpdate() > 0;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+
+/**
+ * Quy tắc luồng trạng thái:
+ * Pending -> Confirmed -> Packing -> Shipping -> Done
+ * Pending / Confirmed có thể chuyển sang Canceled
+ * Done / Canceled: trạng thái cuối, không đổi nữa.
+ */
+private boolean canTransition(String current, String target) {
+    if (current == null || target == null) return false;
+
+    String cur = current.trim().toLowerCase();
+    String tar = target.trim().toLowerCase();
+
+    // Đơn đã hoàn tất hoặc đã hủy thì khóa
+    if (cur.equals("done") || cur.equals("canceled")) return false;
+
+    // Không thay đổi gì
+    if (cur.equals(tar)) return true;
+
+    switch (cur) {
+        case "pending":
+            // từ Pending -> Confirmed hoặc Canceled
+            return tar.equals("confirmed") || tar.equals("canceled");
+        case "confirmed":
+            // từ Confirmed -> Packing hoặc Canceled
+            return tar.equals("packing") || tar.equals("canceled");
+        case "packing":
+            // từ Packing -> Shipping
+            return tar.equals("shipping");
+        case "shipping":
+            // từ Shipping -> Done
+            return tar.equals("done");
+        default:
+            return false;
+    }
+}
 
 }
