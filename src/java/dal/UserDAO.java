@@ -11,7 +11,7 @@ import org.mindrot.jbcrypt.BCrypt;
 public class UserDAO extends DBContext {
 
     /** Giữ 1 tên bảng duy nhất (MySQL: backtick để tránh keyword) */
-    private static final String TBL = "`Users`";
+    private static final String TBL  = "`Users`";
     private static final String COLS = "UserID, FullName, Email, PasswordHash, Phone, Address, Role, CreatedAt";
 
     /* ===================== LOGIN ===================== */
@@ -135,6 +135,11 @@ public class UserDAO extends DBContext {
         return null;
     }
 
+    /** Alias để AdminUserController dùng `getById` cho gọn */
+    public User getById(int id) {
+        return getUserById(id);
+    }
+
     /* ===================== PASSWORD ===================== */
 
     /** Cập nhật mật khẩu bằng email – chấp nhận raw hoặc bcrypt, luôn lưu dạng bcrypt. */
@@ -166,7 +171,7 @@ public class UserDAO extends DBContext {
         }
     }
 
-    /* ===================== ADMIN UTILS ===================== */
+    /* ===================== ADMIN UTILS CŨ ===================== */
 
     public int countAll() {
         String sql = "SELECT COUNT(*) FROM " + TBL;
@@ -179,9 +184,10 @@ public class UserDAO extends DBContext {
         return 0;
     }
 
+    /** Dùng cho Admin list user + search theo q (tên/email) – bản cũ không phân trang */
     public List<User> searchUsers(String q) {
         List<User> list = new ArrayList<>();
-        String base = "SELECT UserID, FullName, Email, Phone, Address, Role, CreatedAt FROM " + TBL + " ";
+        String base = "SELECT " + COLS + " FROM " + TBL + " ";
         String sql = base + ((q == null || q.isBlank()) ? "" : "WHERE FullName LIKE ? OR Email LIKE ? ")
                    + "ORDER BY CreatedAt DESC LIMIT 100";
         try (PreparedStatement st = connection.prepareStatement(sql)) {
@@ -192,19 +198,26 @@ public class UserDAO extends DBContext {
             }
             try (ResultSet rs = st.executeQuery()) {
                 while (rs.next()) {
-                    User u = new User();
-                    u.setUserID(rs.getInt(1));
-                    u.setFullName(rs.getString(2));
-                    u.setEmail(rs.getString(3));
-                    u.setPhone(rs.getString(4));
-                    u.setAddress(rs.getString(5));
-                    u.setRole(rs.getString(6));
-                    u.setCreatedAt(rs.getTimestamp(7));
-                    list.add(u);
+                    list.add(mapUser(rs));
                 }
             }
         } catch (SQLException e) {
             System.err.println("UserDAO.searchUsers error: " + e.getMessage());
+        }
+        return list;
+    }
+
+    /** Lấy tất cả user (dùng cho Admin khi không nhập q) */
+    public List<User> getAllUsers() {
+        List<User> list = new ArrayList<>();
+        String sql = "SELECT " + COLS + " FROM " + TBL + " ORDER BY CreatedAt DESC";
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapUser(rs));
+            }
+        } catch (Exception e) {
+            System.err.println("UserDAO.getAllUsers error: " + e.getMessage());
         }
         return list;
     }
@@ -221,6 +234,91 @@ public class UserDAO extends DBContext {
             System.err.println("UserDAO.updateRole error: " + e.getMessage());
             return false;
         }
+    }
+
+    /* ===================== ADMIN + PHÂN TRANG MỞ RỘNG ===================== */
+
+    /**
+     * Đếm tổng số user theo bộ lọc để phân trang.
+     * @param q      chuỗi tìm kiếm (tên/email)
+     * @param role   lọc theo vai trò (Admin/Staff/Customer hoặc null/all)
+     * @param status để dành cho sau này (active/inactive...), hiện có thể null
+     */
+    public int countUsers(String q, String role, String status) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM " + TBL + " WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+
+        if (q != null && !q.isBlank()) {
+            sql.append(" AND (FullName LIKE ? OR Email LIKE ?)");
+            String like = "%" + q.trim() + "%";
+            params.add(like);
+            params.add(like);
+        }
+
+        if (role != null && !role.isBlank() && !"all".equalsIgnoreCase(role)) {
+            sql.append(" AND Role = ?");
+            params.add(normalizeRole(role));
+        }
+
+        // status: nếu sau này có cột Status/IsActive thì thêm điều kiện tại đây
+
+        try (PreparedStatement st = connection.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                st.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("UserDAO.countUsers error: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    /**
+     * Tìm user theo q + role + status + phân trang.
+     *
+     * @param offset   vị trí bắt đầu ( (page-1) * pageSize )
+     * @param pageSize số dòng mỗi trang
+     */
+    public List<User> searchUsers(String q, String role, String status, int offset, int pageSize) {
+        List<User> list = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder("SELECT " + COLS + " FROM " + TBL + " WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+
+        if (q != null && !q.isBlank()) {
+            sql.append(" AND (FullName LIKE ? OR Email LIKE ?)");
+            String like = "%" + q.trim() + "%";
+            params.add(like);
+            params.add(like);
+        }
+
+        if (role != null && !role.isBlank() && !"all".equalsIgnoreCase(role)) {
+            sql.append(" AND Role = ?");
+            params.add(normalizeRole(role));
+        }
+
+        // status: để dành, chưa lọc gì thêm
+
+        sql.append(" ORDER BY CreatedAt DESC LIMIT ?, ?");
+        params.add(offset);
+        params.add(pageSize);
+
+        try (PreparedStatement st = connection.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                st.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = st.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapUser(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("UserDAO.searchUsers(q,role,status,offset,pageSize) error: " + e.getMessage());
+        }
+
+        return list;
     }
 
     /* ===================== Helpers ===================== */
@@ -245,7 +343,7 @@ public class UserDAO extends DBContext {
         return BCrypt.hashpw(raw, BCrypt.gensalt(12));
     }
 
-    private static String normalizeRole(String role) {
+    static String normalizeRole(String role) {
         if (role == null) return "Customer";
         String r = role.trim();
         if (r.equalsIgnoreCase("Admin")) return "Admin";
@@ -253,6 +351,7 @@ public class UserDAO extends DBContext {
         return "Customer";
     }
 
+    /** Map 1 dòng ResultSet -> User đầy đủ */
     private static User mapUser(ResultSet rs) throws SQLException {
         User u = new User();
         u.setUserID(rs.getInt("UserID"));

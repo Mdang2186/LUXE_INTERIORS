@@ -8,6 +8,11 @@ import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.Multipart;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.activation.DataHandler;
+import jakarta.mail.util.ByteArrayDataSource;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
@@ -18,6 +23,7 @@ import model.Order;
  * EmailService — gửi email SMTP (Gmail App Password / SendGrid / Mailgun...)
  * - Gửi được HTML template thương hiệu LUXE INTERIORS
  * - Có sẵn OTP, welcome, contact, subscription, và xác nhận đơn hàng kèm QR
+ * - ĐÃ BỔ SUNG: gửi email kèm file đính kèm (PDF, Excel...)
  *
  * LƯU Ý:
  *  - Với Gmail: BẮT BUỘC dùng App Password (bật 2FA).
@@ -40,6 +46,24 @@ public class EmailService {
     private final String fromName = or(System.getenv("SMTP_FROM_NAME"), FROM_NAME_DEF);
 
     // =========================================================================
+    // Tạo Session dùng chung
+    // =========================================================================
+    private Session createSession() {
+        Properties p = new Properties();
+        p.put("mail.smtp.auth", "true");
+        p.put("mail.smtp.starttls.enable", "true");
+        p.put("mail.smtp.host", host);
+        p.put("mail.smtp.port", String.valueOf(port));
+
+        return Session.getInstance(p, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(user, pass);
+            }
+        });
+    }
+
+    // =========================================================================
     // Gửi email thô: subject + HTML body
     // =========================================================================
     public boolean send(String to, String subject, String htmlBody) {
@@ -48,18 +72,7 @@ public class EmailService {
             return false;
         }
         try {
-            Properties p = new Properties();
-            p.put("mail.smtp.auth", "true");
-            p.put("mail.smtp.starttls.enable", "true");
-            p.put("mail.smtp.host", host);
-            p.put("mail.smtp.port", String.valueOf(port));
-
-            Session session = Session.getInstance(p, new Authenticator() {
-                @Override
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(user, pass);
-                }
-            });
+            Session session = createSession();
 
             MimeMessage m = new MimeMessage(session);
             m.setFrom(new InternetAddress(user, fromName, StandardCharsets.UTF_8.name()));
@@ -87,6 +100,159 @@ public class EmailService {
         String preheader = safe.length() > 80 ? safe.substring(0, 80) + "..." : safe;
         String html = wrapBrandMail(subject, preheader, inner);
         return send(to, subject, html);
+    }
+
+    // =========================================================================
+    // GỬI EMAIL KÈM FILE ĐÍNH KÈM (MỚI THÊM)
+    // =========================================================================
+
+    /**
+     * Gửi email HTML kèm 1 file đính kèm (ví dụ: invoice.pdf hoặc report.xlsx).
+     *
+     * @param to       Email người nhận
+     * @param subject  Tiêu đề mail
+     * @param htmlBody Nội dung HTML (đã bọc template hoặc sẽ bọc bên ngoài)
+     * @param fileName Tên file hiển thị (vd: "invoice-123.pdf")
+     * @param data     Mảng byte nội dung file
+     * @param mimeType Kiểu MIME (vd: "application/pdf", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+     */
+    public boolean sendWithAttachment(String to,
+                                      String subject,
+                                      String htmlBody,
+                                      String fileName,
+                                      byte[] data,
+                                      String mimeType) {
+        if (isBlank(user) || isBlank(pass)) {
+            System.err.println("[EmailService] Chưa cấu hình SMTP_USER/SMTP_PASS.");
+            return false;
+        }
+
+        try {
+            Session session = createSession();
+
+            MimeMessage msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress(user, fromName, StandardCharsets.UTF_8.name()));
+            msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to, false));
+            msg.setSubject(subject, StandardCharsets.UTF_8.name());
+
+            // Phần 1: body HTML
+            MimeBodyPart bodyPart = new MimeBodyPart();
+            bodyPart.setContent(htmlBody, "text/html; charset=UTF-8");
+
+            // Phần 2: file đính kèm
+            MimeBodyPart attachPart = new MimeBodyPart();
+            attachPart.setDataHandler(new DataHandler(
+                    new ByteArrayDataSource(data, mimeType)
+            ));
+            attachPart.setFileName(fileName);
+
+            Multipart multipart = new MimeMultipart();
+            multipart.addBodyPart(bodyPart);
+            multipart.addBodyPart(attachPart);
+
+            msg.setContent(multipart);
+            Transport.send(msg);
+            return true;
+        } catch (Exception e) {
+            System.err.println("[EmailService] sendWithAttachment error: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Gửi email HTML kèm 2 file đính kèm (ví dụ: Excel + PDF).
+     *
+     * Dùng cho case:
+     *  - Báo cáo doanh thu tháng: gửi kèm report.xlsx + report.pdf
+     */
+    public boolean sendWithTwoAttachments(String to,
+                                          String subject,
+                                          String htmlBody,
+                                          String fileName1,
+                                          byte[] data1,
+                                          String mimeType1,
+                                          String fileName2,
+                                          byte[] data2,
+                                          String mimeType2) {
+        if (isBlank(user) || isBlank(pass)) {
+            System.err.println("[EmailService] Chưa cấu hình SMTP_USER/SMTP_PASS.");
+            return false;
+        }
+
+        try {
+            Session session = createSession();
+
+            MimeMessage msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress(user, fromName, StandardCharsets.UTF_8.name()));
+            msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to, false));
+            msg.setSubject(subject, StandardCharsets.UTF_8.name());
+
+            // Body HTML
+            MimeBodyPart bodyPart = new MimeBodyPart();
+            bodyPart.setContent(htmlBody, "text/html; charset=UTF-8");
+
+            // Attachment 1
+            MimeBodyPart attach1 = new MimeBodyPart();
+            attach1.setDataHandler(new DataHandler(
+                    new ByteArrayDataSource(data1, mimeType1)
+            ));
+            attach1.setFileName(fileName1);
+
+            // Attachment 2
+            MimeBodyPart attach2 = new MimeBodyPart();
+            attach2.setDataHandler(new DataHandler(
+                    new ByteArrayDataSource(data2, mimeType2)
+            ));
+            attach2.setFileName(fileName2);
+
+            Multipart multipart = new MimeMultipart();
+            multipart.addBodyPart(bodyPart);
+            multipart.addBodyPart(attach1);
+            multipart.addBodyPart(attach2);
+
+            msg.setContent(multipart);
+            Transport.send(msg);
+            return true;
+        } catch (Exception e) {
+            System.err.println("[EmailService] sendWithTwoAttachments error: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Ví dụ helper: Gửi hóa đơn PDF cho 1 đơn hàng (nếu bạn muốn dùng nhanh,
+     * còn không thì dùng controller gọi trực tiếp sendWithAttachment cũng được).
+     */
+    public boolean sendInvoicePdf(String toEmail,
+                                  String fullName,
+                                  Order order,
+                                  byte[] pdfBytes) {
+
+        String subject = "Hóa đơn đơn hàng "
+                + (order != null && order.getOrderID() > 0 ? ("#" + order.getOrderID()) : "")
+                + " - LUXE INTERIORS";
+
+        String preheader = "Hóa đơn mua hàng tại LUXE INTERIORS.";
+        String inner = ""
+                + "<p style=\"margin:0 0 12px 0\">Xin chào <b>" + escape(fullName) + "</b>,</p>"
+                + "<p style=\"margin:0 0 16px 0\">"
+                + "Đính kèm là hóa đơn PDF cho đơn hàng của bạn tại <b>LUXE INTERIORS</b>."
+                + "</p>"
+                + "<p style=\"margin:0 0 0 0;color:#6b7280;font-size:13px\">"
+                + "Nếu có bất kỳ thắc mắc, vui lòng phản hồi email này hoặc liên hệ đội ngũ hỗ trợ."
+                + "</p>";
+
+        String html = wrapBrandMail(subject, preheader, inner);
+        return sendWithAttachment(
+                toEmail,
+                subject,
+                html,
+                "invoice-" + (order != null ? order.getOrderID() : "order") + ".pdf",
+                pdfBytes,
+                "application/pdf"
+        );
     }
 
     // =========================================================================
