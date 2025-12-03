@@ -197,17 +197,7 @@
             Báo cáo &amp; Xuất file
         </p>
 
-        <a href="${path}/admin/orders/export-excel"
-           class="sidebar-link flex items-center gap-4 px-4 py-3.5 text-sm font-medium rounded-xl text-slate-500">
-            <i class="fa-solid fa-file-excel w-5 text-center"></i>
-            <span>Excel đơn hàng</span>
-        </a>
-
-        <a href="${path}/admin/users/export-csv"
-           class="sidebar-link flex items-center gap-4 px-4 py-3.5 text-sm font-medium rounded-xl text-slate-500">
-            <i class="fa-solid fa-file-csv w-5 text-center"></i>
-            <span>Khách hàng (CSV)</span>
-        </a>
+        
 
         <a href="${path}/admin/dashboard/export-pdf?from=${from}&to=${to}&year=${year}"
            class="sidebar-link flex items-center gap-4 px-4 py-3.5 text-sm font-medium rounded-xl text-slate-500">
@@ -272,12 +262,7 @@
                     <p class="px-4 py-2 text-[10px] uppercase tracking-widest text-slate-400 font-bold">
                         Xuất nhanh
                     </p>
-                    <a href="${path}/admin/orders/export-excel" class="flex items-center gap-2 px-4 py-2 hover:bg-slate-50">
-                        <i class="fa-solid fa-file-excel text-emerald-500 w-4 text-center"></i> Excel đơn hàng
-                    </a>
-                    <a href="${path}/admin/users/export-csv" class="flex items-center gap-2 px-4 py-2 hover:bg-slate-50">
-                        <i class="fa-solid fa-file-csv text-sky-500 w-4 text-center"></i> Khách hàng (CSV)
-                    </a>
+                  
                     <a href="${path}/admin/dashboard/export-pdf?from=${from}&to=${to}&year=${year}" class="flex items-center gap-2 px-4 py-2 hover:bg-slate-50">
                         <i class="fa-solid fa-file-pdf text-red-500 w-4 text-center"></i> Báo cáo Dashboard (PDF)
                     </a>
@@ -454,17 +439,9 @@
                     </span>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <a href="${path}/admin/orders/export-excel"
-                       class="inline-flex items-center justify-between px-4 py-3 rounded-xl bg-slate-50 hover:bg-white hover:shadow-md border border-slate-100 hover:border-neon-blue transition-all text-sm font-semibold text-slate-700">
-                        <span>Excel đơn hàng</span>
-                        <i class="fa-solid fa-file-excel"></i>
-                    </a>
+                    
 
-                    <a href="${path}/admin/users/export-csv"
-                       class="inline-flex items-center justify-between px-4 py-3 rounded-xl bg-slate-50 hover:bg-white hover:shadow-md border border-slate-100 hover:border-neon-blue transition-all text-sm font-semibold text-slate-700">
-                        <span>Khách hàng (CSV)</span>
-                        <i class="fa-solid fa-file-csv"></i>
-                    </a>
+                    
 
                     <a href="${path}/admin/dashboard/export-pdf?from=${from}&to=${to}&year=${year}"
                        class="inline-flex items-center justify-between px-4 py-3 rounded-xl bg-slate-50 hover:bg-white hover:shadow-md border border-slate-100 hover:border-neon-purple transition-all text-sm font-semibold text-slate-700">

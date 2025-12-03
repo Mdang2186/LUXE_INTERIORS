@@ -30,13 +30,24 @@ public class AdminDashboardEmailController extends HttpServlet {
         emailService = new EmailService();
     }
 
+    /** Nếu ai đó GET trực tiếp URL thì cho quay về dashboard */
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        resp.sendRedirect(req.getContextPath() + "/admin/dashboard");
+    }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
         String toEmail = req.getParameter("email");
         if (toEmail == null || toEmail.isBlank()) {
-            resp.sendError(400, "Vui lòng nhập email nhận báo cáo.");
+            // set message đẹp rồi forward ra JSP
+            req.setAttribute("success", false);
+            req.setAttribute("message", "Vui lòng nhập email nhận báo cáo.");
+            req.getRequestDispatcher("/WEB-INF/admin/email-report-result.jsp")
+               .forward(req, resp);
             return;
         }
 
@@ -62,7 +73,7 @@ public class AdminDashboardEmailController extends HttpServlet {
                 if (fromDate.isAfter(toDate)) {
                     LocalDate tmp = fromDate;
                     fromDate = toDate;
-                    toDate = tmp;
+                    toDate   = tmp;
                 }
             }
         } catch (Exception e) {
@@ -88,7 +99,10 @@ public class AdminDashboardEmailController extends HttpServlet {
             );
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendError(500, "Lỗi tạo báo cáo PDF");
+            req.setAttribute("success", false);
+            req.setAttribute("message", "Lỗi tạo báo cáo PDF. Vui lòng thử lại sau.");
+            req.getRequestDispatcher("/WEB-INF/admin/email-report-result.jsp")
+               .forward(req, resp);
             return;
         }
 
@@ -112,7 +126,19 @@ public class AdminDashboardEmailController extends HttpServlet {
                 "application/pdf"
         );
 
-        resp.setContentType("text/plain;charset=UTF-8");
-        resp.getWriter().println(ok ? "Đã gửi báo cáo qua email." : "Gửi báo cáo thất bại.");
+        // Gửi xong -> set thuộc tính + forward sang JSP giao diện đẹp
+        req.setAttribute("success", ok);
+        if (ok) {
+            req.setAttribute("message",
+                    "Báo cáo đã được gửi tới địa chỉ email: " + toEmail.trim());
+        } else {
+            req.setAttribute("message",
+                    "Gửi báo cáo thất bại. Vui lòng kiểm tra cấu hình email hoặc thử lại sau.");
+        }
+        req.setAttribute("fromDate", fromDate.toString());
+        req.setAttribute("toDate", toDate.toString());
+
+        req.getRequestDispatcher("/WEB-INF/admin/email-report-result.jsp")
+           .forward(req, resp);
     }
 }

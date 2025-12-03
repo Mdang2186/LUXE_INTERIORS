@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import model.Product;
 
+import model.Product;
 import model.User;
 
 /**
@@ -93,7 +93,7 @@ public class AdminStatsDAO extends DBContext {
 
     /* ================== 2. TỒN KHO / STOCK ================== */
 
-    /** Số sản phẩm có Stock <= ngưỡng cảnh báo (low stock). */
+    /** Số sản phẩm có Stock <= ngưỡng cảnh báo (low stock, gồm cả hết hàng). */
     public int countLowStock(int threshold) {
         String sql = "SELECT COUNT(*) FROM Products WHERE Stock <= ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -119,16 +119,24 @@ public class AdminStatsDAO extends DBContext {
         }
     }
 
-    /** Danh sách sản phẩm tồn kho thấp. */
-    public List<LowStockProduct> getLowStockProducts(int threshold) {
-        String sql = "SELECT ProductID, ProductName, Stock "
-                   + "FROM Products WHERE Stock <= ? ORDER BY Stock ASC";
-        List<LowStockProduct> list = new ArrayList<>();
+    /**
+     * Danh sách sản phẩm tồn kho thấp (dùng cho bảng cảnh báo).
+     * Trả về model.Product để JSP dùng ${p.productID}, ${p.productName}, ${p.stock}.
+     */
+    public List<Product> getLowStockProducts(int threshold) {
+        String sql =
+            "SELECT ProductID, ProductName, Stock " +
+            "FROM Products " +
+            "WHERE Stock IS NOT NULL AND Stock <= ? " +
+            "ORDER BY Stock ASC, ProductName ASC " +
+            "LIMIT 10"; // lấy tối đa 10 sản phẩm
+
+        List<Product> list = new ArrayList<>();
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, threshold);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    LowStockProduct p = new LowStockProduct();
+                    Product p = new Product();
                     p.setProductID(rs.getInt("ProductID"));
                     p.setProductName(rs.getString("ProductName"));
                     p.setStock(rs.getInt("Stock"));
@@ -187,7 +195,6 @@ public class AdminStatsDAO extends DBContext {
 
     /**
      * Doanh thu theo Category trong khoảng ngày (dùng cho biểu đồ cột).
-     * Bổ sung thêm số đơn (orderCount) cho báo cáo chi tiết.
      */
     public List<CategoryRevenue> getRevenueByCategory(java.sql.Date from, java.sql.Date to) {
         String sql = "SELECT c.CategoryName, " +
@@ -301,10 +308,7 @@ public class AdminStatsDAO extends DBContext {
         return list;
     }
 
-    /**
-     * Top khách hàng VIP trong 1 tháng cụ thể (theo năm + tháng).
-     * Dùng cho: Top 5 KH VIP trong tháng (bảng + Excel/PDF trên dashboard).
-     */
+    /** Top khách hàng VIP trong 1 tháng cụ thể (theo năm + tháng). */
     public List<VipCustomer> getTopVipCustomersInMonth(int year, int month, int limit) {
         String sql = "SELECT u.UserID, u.FullName, u.Email, " +
                      "       COUNT(o.OrderID) AS orderCount, " +
@@ -339,7 +343,7 @@ public class AdminStatsDAO extends DBContext {
         return list;
     }
 
-    /** Danh sách khách hàng mới trong 1 tháng (dùng DTO gọn cho báo cáo / PDF). */
+    /** Danh sách khách hàng mới trong 1 tháng (DTO gọn). */
     public List<NewCustomer> getNewCustomersInMonth(int year, int month) {
         String sql = "SELECT UserID, FullName, Email, CreatedAt " +
                      "FROM Users " +
@@ -365,9 +369,7 @@ public class AdminStatsDAO extends DBContext {
         return list;
     }
 
-    /**
-     * Danh sách khách hàng mới trong 1 tháng (trả về full model User – dùng chỗ khác nếu cần).
-     */
+    /** Danh sách khách hàng mới trong 1 tháng (trả về full model User). */
     public List<User> getNewUsersInMonth(int year, int month) {
         String sql = "SELECT UserID, FullName, Email, Phone, Address, Role, CreatedAt " +
                      "FROM Users " +
@@ -651,12 +653,10 @@ public class AdminStatsDAO extends DBContext {
         private String categoryName;
         private BigDecimal revenue;
         private int orderCount;
-
         public String getCategoryName() { return categoryName; }
         public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
         public BigDecimal getRevenue() { return revenue; }
         public void setRevenue(BigDecimal revenue) { this.revenue = revenue; }
-
         public int getOrderCount() { return orderCount; }
         public void setOrderCount(int orderCount) { this.orderCount = orderCount; }
     }
@@ -668,18 +668,6 @@ public class AdminStatsDAO extends DBContext {
         public void setMonth(String month) { this.month = month; }
         public int getCount() { return count; }
         public void setCount(int count) { this.count = count; }
-    }
-
-    public static class LowStockProduct {
-        private int productID;
-        private String productName;
-        private int stock;
-        public int getProductID() { return productID; }
-        public void setProductID(int productID) { this.productID = productID; }
-        public String getProductName() { return productName; }
-        public void setProductName(String productName) { this.productName = productName; }
-        public int getStock() { return stock; }
-        public void setStock(int stock) { this.stock = stock; }
     }
 
     public static class TopProduct {
@@ -701,23 +689,16 @@ public class AdminStatsDAO extends DBContext {
         private String email;
         private int orderCount;
         private BigDecimal totalSpent;
-
         public int getUserID() { return userID; }
         public void setUserID(int userID) { this.userID = userID; }
-
-        // alias để dùng getUserId() ở chỗ khác (ExcelExportUtil, controller,...)
         public int getUserId() { return userID; }
         public void setUserId(int userId) { this.userID = userId; }
-
         public String getFullName() { return fullName; }
         public void setFullName(String fullName) { this.fullName = fullName; }
-
         public String getEmail() { return email; }
         public void setEmail(String email) { this.email = email; }
-
         public int getOrderCount() { return orderCount; }
         public void setOrderCount(int orderCount) { this.orderCount = orderCount; }
-
         public BigDecimal getTotalSpent() { return totalSpent; }
         public void setTotalSpent(BigDecimal totalSpent) { this.totalSpent = totalSpent; }
     }
@@ -765,13 +746,10 @@ public class AdminStatsDAO extends DBContext {
         private String brandName;
         private BigDecimal revenue;
         private int orderCount;
-
         public String getBrandName() { return brandName; }
         public void setBrandName(String brandName) { this.brandName = brandName; }
-
         public String getBrand() { return brandName; }
         public void setBrand(String brand) { this.brandName = brand; }
-
         public BigDecimal getRevenue() { return revenue; }
         public void setRevenue(BigDecimal revenue) { this.revenue = revenue; }
         public int getOrderCount() { return orderCount; }
@@ -782,7 +760,6 @@ public class AdminStatsDAO extends DBContext {
         private int hour;
         private int orderCount;
         private BigDecimal revenue;
-
         public int getHour() { return hour; }
         public void setHour(int hour) { this.hour = hour; }
         public int getOrderCount() { return orderCount; }
@@ -797,16 +774,12 @@ public class AdminStatsDAO extends DBContext {
         private String fullName;
         private String email;
         private Timestamp createdAt;
-
         public int getUserId() { return userId; }
         public void setUserId(int userId) { this.userId = userId; }
-
         public String getFullName() { return fullName; }
         public void setFullName(String fullName) { this.fullName = fullName; }
-
         public String getEmail() { return email; }
         public void setEmail(String email) { this.email = email; }
-
         public Timestamp getCreatedAt() { return createdAt; }
         public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
     }
@@ -829,7 +802,6 @@ public class AdminStatsDAO extends DBContext {
         private BigDecimal totalRevenue;
         private double cancelRate;
         private BigDecimal averageOrderValue;
-
         public int getTotalOrders() { return totalOrders; }
         public void setTotalOrders(int totalOrders) { this.totalOrders = totalOrders; }
         public int getCanceledOrders() { return canceledOrders; }
@@ -871,40 +843,7 @@ public class AdminStatsDAO extends DBContext {
         }
         return list;
     }
-   
 
-    /**
-     * Đếm số sản phẩm tồn kho thấp (0 < stock <= threshold).
-     */
-    public int countLowStockProducts(int threshold) {
-        String sql = "SELECT COUNT(*) FROM Products WHERE Stock > 0 AND Stock <= ?";
-        try (Connection con = getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, threshold);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    /**
-     * Đếm số sản phẩm hết hàng (Stock <= 0).
-     */
-    public int countOutOfStockProducts() {
-        String sql = "SELECT COUNT(*) FROM Products WHERE Stock <= 0";
-        try (Connection con = getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
     /** Lợi nhuận ước tính của 1 tháng bất kỳ (nếu cần tính riêng). */
     public BigDecimal getProfitForMonth(int year, int month) {
         String sql = "SELECT COALESCE(SUM((oi.UnitPrice - p.CostPrice) * oi.Quantity),0) " +
@@ -922,5 +861,15 @@ public class AdminStatsDAO extends DBContext {
             e.printStackTrace();
             return BigDecimal.ZERO;
         }
+    }
+
+    /* ====== 9. CÁC HÀM WRAPPER CŨ (NẾU Ở CHỖ KHÁC ĐÃ DÙNG TÊN NÀY) ====== */
+
+    public int countLowStockProducts(int threshold) {
+        return countLowStock(threshold);
+    }
+
+    public int countOutOfStockProducts() {
+        return countOutOfStock();
     }
 }

@@ -12,7 +12,8 @@ import java.io.IOException;
 import model.Order;
 import model.Product;
 import model.User;                          // <<-- THÊM
-
+ import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 // POI
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;     // .xls
 import org.apache.poi.ss.usermodel.BorderStyle;
@@ -674,27 +675,30 @@ public class ExcelExportUtil {
         return style;
     }
 
-    private static String nz(String s) {
+         private static String nz(String s) {
         return (s == null) ? "" : s;
     }
-     /**
-     * Xuất danh sách đơn hàng ra file Excel (XLSX) vào OutputStream.
-     */
-    public static void exportOrders(List<Order> orders, OutputStream out) throws IOException {
+
+    // =========================================================
+    // EXPORT DANH SÁCH ĐƠN HÀNG (.xls, HSSFWorkbook)
+    // =========================================================
+    public static void exportOrders(List<Order> orders, OutputStream out) throws Exception {
         if (orders == null) {
-            throw new IllegalArgumentException("orders is null");
+            orders = java.util.Collections.emptyList();
         }
 
-        try (Workbook wb = new XSSFWorkbook()) {
+        Workbook wb = new HSSFWorkbook();   // dùng HSSFWorkbook như các export khác
+        try {
             CreationHelper helper = wb.getCreationHelper();
             Sheet sheet = wb.createSheet("Orders");
 
-            // ===== STYLE =====
-            // Header style
+            // ----- STYLE -----
+            // Header
             CellStyle headerStyle = wb.createCellStyle();
             Font headerFont = wb.createFont();
             headerFont.setBold(true);
             headerFont.setFontHeightInPoints((short) 11);
+            headerFont.setFontName("Calibri");
             headerStyle.setFont(headerFont);
             headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -703,7 +707,7 @@ public class ExcelExportUtil {
             headerStyle.setBorderLeft(BorderStyle.THIN);
             headerStyle.setBorderRight(BorderStyle.THIN);
 
-            // Date style
+            // Date
             CellStyle dateStyle = wb.createCellStyle();
             dateStyle.setDataFormat(
                     helper.createDataFormat().getFormat("dd/MM/yyyy HH:mm")
@@ -713,7 +717,7 @@ public class ExcelExportUtil {
             dateStyle.setBorderLeft(BorderStyle.THIN);
             dateStyle.setBorderRight(BorderStyle.THIN);
 
-            // Number (money) style
+            // Money
             CellStyle moneyStyle = wb.createCellStyle();
             moneyStyle.setDataFormat(
                     helper.createDataFormat().getFormat("#,##0")
@@ -723,21 +727,22 @@ public class ExcelExportUtil {
             moneyStyle.setBorderLeft(BorderStyle.THIN);
             moneyStyle.setBorderRight(BorderStyle.THIN);
 
-            // Normal cell style
+            // Normal
             CellStyle normalStyle = wb.createCellStyle();
             normalStyle.setBorderBottom(BorderStyle.THIN);
             normalStyle.setBorderTop(BorderStyle.THIN);
             normalStyle.setBorderLeft(BorderStyle.THIN);
             normalStyle.setBorderRight(BorderStyle.THIN);
 
-            // ===== HEADER ROW =====
+            // ----- HEADER -----
             String[] headers = {
                     "Order ID",
                     "User ID",
                     "Order Date",
                     "Status",
                     "Payment",
-                    "Total Amount"
+                    "Total Amount",
+                    "Shipping Address"
             };
 
             int rowIdx = 0;
@@ -748,7 +753,8 @@ public class ExcelExportUtil {
                 cell.setCellStyle(headerStyle);
             }
 
-            // ===== DATA ROWS =====
+            // ----- DATA -----
+            int count = 0;
             for (Order o : orders) {
                 if (o == null) continue;
 
@@ -768,8 +774,7 @@ public class ExcelExportUtil {
                 // Order date
                 Cell c2 = row.createCell(col++);
                 if (o.getOrderDate() != null) {
-                    // getOrderDate() thường là java.util.Date
-                    c2.setCellValue(o.getOrderDate());
+                    c2.setCellValue(o.getOrderDate()); // java.util.Date
                     c2.setCellStyle(dateStyle);
                 } else {
                     c2.setCellValue("");
@@ -778,34 +783,47 @@ public class ExcelExportUtil {
 
                 // Status
                 Cell c3 = row.createCell(col++);
-                c3.setCellValue(o.getStatus() == null ? "" : o.getStatus());
+                c3.setCellValue(nz(o.getStatus()));
                 c3.setCellStyle(normalStyle);
 
                 // Payment method
                 Cell c4 = row.createCell(col++);
-                c4.setCellValue(o.getPaymentMethod() == null ? "" : o.getPaymentMethod());
+                c4.setCellValue(nz(o.getPaymentMethod()));
                 c4.setCellStyle(normalStyle);
 
                 // Total amount
                 Cell c5 = row.createCell(col++);
+                double amount = 0;
                 try {
-                    c5.setCellValue(o.getTotalAmount()); // double
+                    amount = o.getTotalAmount();   // totalAmount là double trong model
                 } catch (Exception ex) {
-                    // Nếu là BigDecimal thì có thể dùng doubleValue()
-                    // c5.setCellValue(o.getTotalAmount().doubleValue());
-                    c5.setCellValue(0);
+                    amount = 0;
                 }
+                c5.setCellValue(amount);
                 c5.setCellStyle(moneyStyle);
+
+                // Shipping address
+                Cell c6 = row.createCell(col++);
+                c6.setCellValue(nz(o.getShippingAddress()));
+                c6.setCellStyle(normalStyle);
+
+                count++;
             }
 
-            // Auto-size cột
+            System.out.println("[EXPORT-ORDERS] rows exported = " + count);
+
             for (int i = 0; i < headers.length; i++) {
                 sheet.autoSizeColumn(i);
             }
 
-            // Ghi workbook ra stream
             wb.write(out);
             out.flush();
+        } finally {
+            wb.close();
         }
     }
 }
+
+
+
+

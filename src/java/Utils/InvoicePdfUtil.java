@@ -11,6 +11,7 @@ import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+import Utils.OrdersPdfUtil;
 
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;

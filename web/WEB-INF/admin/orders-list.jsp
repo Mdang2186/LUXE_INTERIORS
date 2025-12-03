@@ -78,9 +78,9 @@
             filter: drop-shadow(0 0 5px rgba(67, 97, 238, 0.5));
         }
         .neon-card {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.9);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
             transition: all 0.3s ease;
             overflow: hidden;
@@ -235,8 +235,8 @@
                 </button>
             </form>
 
-            <!-- Export Excel -->
-            <c:url var="exportUrl" value="/admin/orders">
+            <!-- Export buttons -->
+            <c:url var="exportExcelUrl" value="/admin/orders">
                 <c:param name="action" value="export-orders"/>
                 <c:if test="${not empty q}"><c:param name="q" value="${q}"/></c:if>
                 <c:if test="${not empty status}"><c:param name="status" value="${status}"/></c:if>
@@ -247,11 +247,31 @@
                 <c:if test="${not empty maxTotal}"><c:param name="maxTotal" value="${maxTotal}"/></c:if>
             </c:url>
 
-            <a href="${exportUrl}"
-               class="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full
-                      bg-gradient-to-r from-neon-blue to-neon-purple text-white shadow-neon-blue">
-                <i class="fa-solid fa-file-excel"></i> Export Excel
-            </a>
+            <c:url var="exportPdfUrl" value="/admin/orders">
+                <c:param name="action" value="export-orders-pdf"/>
+                <c:if test="${not empty q}"><c:param name="q" value="${q}"/></c:if>
+                <c:if test="${not empty status}"><c:param name="status" value="${status}"/></c:if>
+                <c:if test="${not empty payment}"><c:param name="payment" value="${payment}"/></c:if>
+                <c:if test="${not empty fromDate}"><c:param name="fromDate" value="${fromDate}"/></c:if>
+                <c:if test="${not empty toDate}"><c:param name="toDate" value="${toDate}"/></c:if>
+                <c:if test="${not empty minTotal}"><c:param name="minTotal" value="${minTotal}"/></c:if>
+                <c:if test="${not empty maxTotal}"><c:param name="maxTotal" value="${maxTotal}"/></c:if>
+            </c:url>
+
+            <div class="flex items-center gap-2">
+                <a href="${exportExcelUrl}"
+                   class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold
+                          bg-emerald-500 text-white shadow-sm hover:bg-emerald-600 transition-colors">
+                    <i class="fa-solid fa-file-excel text-sm"></i>
+                    <span>Xuất Excel</span>
+                </a>
+                <a href="${exportPdfUrl}"
+                   class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold
+                          bg-rose-500 text-white shadow-sm hover:bg-rose-600 transition-colors">
+                    <i class="fa-solid fa-file-pdf text-sm"></i>
+                    <span>Xuất PDF</span>
+                </a>
+            </div>
         </div>
     </header>
 

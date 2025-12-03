@@ -14,6 +14,30 @@ import model.Product;
 public class OrderDAO extends DBContext {
 
     // ===================== TẠO ĐƠN HÀNG =====================
+public List<Order> getAllOrdersForExport() {
+    String sql = "SELECT OrderID, UserID, OrderDate, TotalAmount, Status, PaymentMethod, ShippingAddress " +
+                 "FROM Orders ORDER BY OrderDate DESC";
+
+    List<Order> list = new ArrayList<>();
+    try (PreparedStatement ps = connection.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+
+        while (rs.next()) {
+            Order o = new Order();
+            o.setOrderID(rs.getInt("OrderID"));
+            o.setUserID(rs.getInt("UserID"));
+            o.setOrderDate(rs.getTimestamp("OrderDate"));
+            o.setTotalAmount(rs.getDouble("TotalAmount")); // nếu model dùng BigDecimal thì sửa cho đúng
+            o.setStatus(rs.getString("Status"));
+            o.setPaymentMethod(rs.getString("PaymentMethod"));
+            o.setShippingAddress(rs.getString("ShippingAddress"));
+            list.add(o);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return list;
+}
 
     public boolean createOrder(Order order) {
         if (connection == null) {

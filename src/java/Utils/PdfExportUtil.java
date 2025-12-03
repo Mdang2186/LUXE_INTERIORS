@@ -12,6 +12,7 @@ import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+import java.awt.Color;
 
 import java.io.OutputStream;
 import java.text.NumberFormat;
@@ -19,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import model.Order;
 
 import model.Product;
 
@@ -310,4 +312,61 @@ public class PdfExportUtil {
     private static String nz(String s) {
         return (s == null) ? "" : s;
     }
+    public static void exportOrders(List<Order> orders, OutputStream out) throws Exception {
+        if (orders == null) {
+            orders = java.util.Collections.emptyList();
+        }
+
+        Document doc = new Document(PageSize.A4.rotate(), 36, 36, 36, 36);
+        PdfWriter.getInstance(doc, out);
+
+        doc.open();
+
+        Paragraph title = new Paragraph("Danh sách đơn hàng");
+        title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingAfter(10f);
+        doc.add(title);
+
+        PdfPTable table = new PdfPTable(7);
+        table.setWidthPercentage(100);
+        table.setWidths(new float[]{8, 8, 18, 12, 12, 12, 30});
+
+        String[] headers = {
+                "Order ID", "User ID", "Ngày đặt",
+                "Trạng thái", "Thanh toán",
+                "Tổng tiền", "Địa chỉ giao hàng"
+        };
+
+        for (String h : headers) {
+            PdfPCell cell = new PdfPCell(new Phrase(h));
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell.setPadding(5f);
+            table.addCell(cell);
+        }
+
+        java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+
+        for (Order o : orders) {
+            if (o == null) continue;
+
+            table.addCell(new PdfPCell(new Phrase(String.valueOf(o.getOrderID()))));
+            table.addCell(new PdfPCell(new Phrase(String.valueOf(o.getUserID()))));
+            table.addCell(new PdfPCell(new Phrase(
+                    o.getOrderDate() == null ? "" : df.format(o.getOrderDate()))));
+            table.addCell(new PdfPCell(new Phrase(
+                    o.getStatus() == null ? "" : o.getStatus())));
+            table.addCell(new PdfPCell(new Phrase(
+                    o.getPaymentMethod() == null ? "" : o.getPaymentMethod())));
+
+            table.addCell(new PdfPCell(new Phrase(
+                    String.format("%,.0f", o.getTotalAmount()))));
+
+            table.addCell(new PdfPCell(new Phrase(
+                    o.getShippingAddress() == null ? "" : o.getShippingAddress())));
+        }
+
+        doc.add(table);
+        doc.close();
+    }
 }
+

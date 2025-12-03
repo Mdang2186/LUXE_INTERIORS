@@ -91,6 +91,28 @@ public class UserDAO extends DBContext {
             return false;
         }
     }
+public List<User> getAllUsersForExport() {
+    String sql = "SELECT UserID, FullName, Email, Phone, Address, Role, CreatedAt " +
+                 "FROM Users ORDER BY CreatedAt DESC";
+    List<User> list = new ArrayList<>();
+    try (PreparedStatement ps = connection.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+            User u = new User();
+            u.setUserID(rs.getInt("UserID"));
+            u.setFullName(rs.getString("FullName"));
+            u.setEmail(rs.getString("Email"));
+            u.setPhone(rs.getString("Phone"));
+            u.setAddress(rs.getString("Address"));
+            u.setRole(rs.getString("Role"));
+            u.setCreatedAt(rs.getTimestamp("CreatedAt"));
+            list.add(u);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return list;
+}
 
     /* ===================== PROFILE / LOOKUP ===================== */
 

@@ -4,7 +4,7 @@ import dal.OrderDAO;
 import dal.UserDAO;
 import model.Order;
 import model.User;
-
+import Utils.PdfExportUtil;   
 import Utils.ExcelExportUtil;
 import Utils.EmailService;
 
@@ -74,13 +74,16 @@ public class AdminOrderController extends HttpServlet {
         switch (action) {
             case "detail":
                 handleDetail(req, resp);
-                break;
+                return;
             case "export-orders":
                 exportOrdersExcel(req, resp);
-                break;
+                return;
+            case "export-orders-pdf":              // <<< THÊM CASE PDF
+                exportOrdersPdf(req, resp);
+                return;
             default:
                 handleList(req, resp);
-                break;
+                return;
         }
     }
 
@@ -188,7 +191,7 @@ public class AdminOrderController extends HttpServlet {
     /**
      * Export danh sách đơn hàng theo filter hiện tại.
      */
-    private void exportOrdersExcel(HttpServletRequest req, HttpServletResponse resp)
+      private void exportOrdersExcel(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
 
         HttpSession session = req.getSession();
@@ -235,8 +238,12 @@ public class AdminOrderController extends HttpServlet {
             e.printStackTrace();
             session.setAttribute("error",
                     "Có lỗi khi xuất Excel: " + e.getMessage());
+            // nếu lỗi, chuyển về trang list (không để 0B)
+            resp.reset();
+            resp.sendRedirect(req.getContextPath() + "/admin/orders");
         }
     }
+
 
     // ========================= POST =========================
 
@@ -486,4 +493,57 @@ public class AdminOrderController extends HttpServlet {
         }
         return result;
     }
+     private void exportOrdersPdf(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+
+        HttpSession session = req.getSession();
+
+        String q       = trimOrNull(req.getParameter("q"));
+        String status  = normalizeStatus(req.getParameter("status"));
+        String payment = trimOrNull(req.getParameter("payment"));
+        String fromStr = trimOrNull(req.getParameter("fromDate"));
+        String toStr   = trimOrNull(req.getParameter("toDate"));
+        String minStr  = trimOrNull(req.getParameter("minTotal"));
+        String maxStr  = trimOrNull(req.getParameter("maxTotal"));
+
+        Date fromDate       = parseDate(fromStr);
+        Date toDate         = parseDate(toStr);
+        BigDecimal minTotal = parseBigDecimal(minStr);
+        BigDecimal maxTotal = parseBigDecimal(maxStr);
+
+        List<Order> rawOrders = odao.getAllOrders(status, 0, MAX_EXPORT_ROWS);
+        if (rawOrders == null) rawOrders = new ArrayList<>();
+        List<Order> filtered = filterOrders(
+                rawOrders, q, status, payment,
+                fromDate, toDate, minTotal, maxTotal
+        );
+
+        if (filtered.isEmpty()) {
+            session.setAttribute("error",
+                    "Không có đơn hàng nào phù hợp để xuất PDF.");
+            resp.sendRedirect(req.getContextPath() + "/admin/orders");
+            return;
+        }
+
+        String fileName = "orders"
+                + (status != null ? "-" + status.toLowerCase() : "")
+                + "-" + new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date())
+                + ".pdf";
+
+        resp.setContentType("application/pdf");
+        resp.setHeader("Content-Disposition",
+                "attachment; filename=\"" + fileName + "\"");
+
+        try (OutputStream out = resp.getOutputStream()) {
+            PdfExportUtil.exportOrders(filtered, out);   // sẽ viết ở bước 4
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.setAttribute("error",
+                    "Có lỗi khi xuất PDF: " + e.getMessage());
+            resp.reset();
+            resp.sendRedirect(req.getContextPath() + "/admin/orders");
+        }
+    }
 }
+
+

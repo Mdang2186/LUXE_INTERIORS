@@ -1,16 +1,18 @@
 package admin;
 
-import Utils.ExcelExportUtil;
 import dal.OrderDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import model.Order;
+import Utils.ExcelExportUtil;
+
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
-import model.Order;
 
 @WebServlet(name = "AdminOrderExportController",
         urlPatterns = {"/admin/orders/export-excel"})
@@ -20,6 +22,7 @@ public class AdminOrderExportController extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
+        super.init();
         odao = new OrderDAO();
     }
 
@@ -27,38 +30,27 @@ public class AdminOrderExportController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        String idRaw = req.getParameter("id");
-        List<Order> orders = new ArrayList<>();
+        List<Order> orders = odao.getAllOrdersForExport();
 
-        if (idRaw != null && !idRaw.isBlank()) {
-            try {
-                int id = Integer.parseInt(idRaw);
-                Order o = odao.getOrderByIdWithItems(id);
-                if (o != null) orders.add(o);
-            } catch (Exception ignored) { }
-        } else {
-            // tất cả đơn
-            orders = odao.getAllOrders(null, 0, Integer.MAX_VALUE);
-        }
-
-        String fileName;
-        if (orders.size() == 1) {
-            fileName = "order-" + orders.get(0).getOrderID() + ".xlsx";
-        } else {
-            fileName = "orders-all.xlsx";
-        }
+        String fileName = "orders.xlsx";
+        String headerValue = "attachment; filename=\"" +
+                URLEncoder.encode(fileName, StandardCharsets.UTF_8) + "\"";
 
         resp.setContentType(
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        resp.setHeader("Content-Disposition",
-                "attachment; filename=\"" +
-                        URLEncoder.encode(fileName, StandardCharsets.UTF_8) + "\"");
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+        resp.setCharacterEncoding("UTF-8");
+        resp.setHeader("Content-Disposition", headerValue);
 
         try {
             ExcelExportUtil.exportOrders(orders, resp.getOutputStream());
-        } catch (Exception e) {
-            e.printStackTrace();
-            resp.sendError(500, "Không thể xuất Excel.");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            if (!resp.isCommitted()) {
+                resp.reset();
+                resp.setContentType("text/plain; charset=UTF-8");
+                resp.getWriter().println("Lỗi khi xuất Excel đơn hàng: " + ex.getMessage());
+            }
         }
     }
 }
