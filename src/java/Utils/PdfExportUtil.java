@@ -309,27 +309,39 @@ public class PdfExportUtil {
 
     // ===== helper =====
 
+      // ===== helper =====
+
     private static String nz(String s) {
         return (s == null) ? "" : s;
     }
+
+    // ========================= EXPORT ORDERS (UNICODE) =========================
     public static void exportOrders(List<Order> orders, OutputStream out) throws Exception {
         if (orders == null) {
             orders = java.util.Collections.emptyList();
         }
 
+        // Khổ A4 xoay ngang cho rộng bảng
         Document doc = new Document(PageSize.A4.rotate(), 36, 36, 36, 36);
         PdfWriter.getInstance(doc, out);
-
         doc.open();
 
-        Paragraph title = new Paragraph("Danh sách đơn hàng");
+        // Dùng cùng FontSet với phần xuất sản phẩm (Arial Unicode + fallback Helvetica)
+        FontSet fonts = createFontSet();
+        NumberFormat currency = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+        java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+
+        // ===== Tiêu đề =====
+        Paragraph title = new Paragraph("Danh sách đơn hàng FurniShop", fonts.title);
         title.setAlignment(Element.ALIGN_CENTER);
         title.setSpacingAfter(10f);
         doc.add(title);
 
+        // ===== Bảng dữ liệu =====
         PdfPTable table = new PdfPTable(7);
         table.setWidthPercentage(100);
         table.setWidths(new float[]{8, 8, 18, 12, 12, 12, 30});
+        table.setHeaderRows(1);
 
         String[] headers = {
                 "Order ID", "User ID", "Ngày đặt",
@@ -337,36 +349,53 @@ public class PdfExportUtil {
                 "Tổng tiền", "Địa chỉ giao hàng"
         };
 
+        // Header
         for (String h : headers) {
-            PdfPCell cell = new PdfPCell(new Phrase(h));
+            PdfPCell cell = new PdfPCell(new Phrase(h, fonts.header));
             cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
             cell.setPadding(5f);
+            cell.setBackgroundColor(new BaseColor(30, 64, 175)); // nền xanh, chữ trắng
             table.addCell(cell);
         }
 
-        java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
-
+        // Dòng dữ liệu
         for (Order o : orders) {
             if (o == null) continue;
 
-            table.addCell(new PdfPCell(new Phrase(String.valueOf(o.getOrderID()))));
-            table.addCell(new PdfPCell(new Phrase(String.valueOf(o.getUserID()))));
-            table.addCell(new PdfPCell(new Phrase(
-                    o.getOrderDate() == null ? "" : df.format(o.getOrderDate()))));
-            table.addCell(new PdfPCell(new Phrase(
-                    o.getStatus() == null ? "" : o.getStatus())));
-            table.addCell(new PdfPCell(new Phrase(
-                    o.getPaymentMethod() == null ? "" : o.getPaymentMethod())));
+            addOrderCell(table, String.valueOf(o.getOrderID()), fonts.cell, Element.ALIGN_CENTER);
+            addOrderCell(table, String.valueOf(o.getUserID()), fonts.cell, Element.ALIGN_CENTER);
 
-            table.addCell(new PdfPCell(new Phrase(
-                    String.format("%,.0f", o.getTotalAmount()))));
+            addOrderCell(table,
+                    (o.getOrderDate() == null ? "" : df.format(o.getOrderDate())),
+                    fonts.cell, Element.ALIGN_LEFT);
 
-            table.addCell(new PdfPCell(new Phrase(
-                    o.getShippingAddress() == null ? "" : o.getShippingAddress())));
+            addOrderCell(table, nz(o.getStatus()), fonts.cell, Element.ALIGN_LEFT);
+            addOrderCell(table, nz(o.getPaymentMethod()), fonts.cell, Element.ALIGN_LEFT);
+
+            // Tổng tiền – dùng NumberFormat cho VND, tránh lỗi format
+            String totalStr;
+            try {
+                totalStr = currency.format(o.getTotalAmount());
+            } catch (Exception ex) {
+                totalStr = String.valueOf(o.getTotalAmount());
+            }
+            addOrderCell(table, totalStr, fonts.cell, Element.ALIGN_RIGHT);
+
+            addOrderCell(table, nz(o.getShippingAddress()), fonts.cell, Element.ALIGN_LEFT);
         }
 
         doc.add(table);
         doc.close();
     }
+
+    private static void addOrderCell(PdfPTable table, String text, Font font, int align) {
+        PdfPCell cell = new PdfPCell(new Phrase(text == null ? "" : text, font));
+        cell.setPadding(4f);
+        cell.setHorizontalAlignment(align);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        table.addCell(cell);
+    }
 }
+
 

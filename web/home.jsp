@@ -150,7 +150,7 @@
              style="object-fit: cover;" 
              autoplay loop muted playsinline
              <%-- poster là ảnh hiển thị trong lúc video tải, dùng lại ảnh cũ --%>
-             poster="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=2000&q=80">
+             poster="https://d3c36halvcc4ph.cloudfront.net/289936_1200x800.jpg">
             
             <%-- 
               QUAN TRỌNG: 
@@ -160,7 +160,7 @@
             <source src="${path}/assets/videos/hero_background.mp4" type="video/mp4">
             
             <%-- Fallback nếu trình duyệt không hỗ trợ --%>
-            <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=2000&q=80"
+            <img src="https://d3c36halvcc4ph.cloudfront.net/289936_1200x800.jpg"
                  alt="Luxury Interior" class="position-absolute w-100 h-100" 
                  style="object-fit:cover;">
         </video>

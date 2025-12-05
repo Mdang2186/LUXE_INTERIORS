@@ -27,9 +27,8 @@ body {
 
 .hero-overlay {
     background: linear-gradient(135deg, rgba(0, 0, 0, .8) 0%, rgba(20, 15, 10, .7) 25%, rgba(40, 30, 20, .6) 50%, rgba(60, 45, 30, .5) 75%, rgba(0, 0, 0, .85) 100%);
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(0.5px); /* giảm mạnh độ mờ */
 }
-
 .text-luxury-gold {
     background: linear-gradient(135deg, #f4d03f 0%, #f1c40f 20%, #d4af37 40%, #b7950b 60%, #9c7a0c 80%, #806000 100%);
     -webkit-background-clip: text;

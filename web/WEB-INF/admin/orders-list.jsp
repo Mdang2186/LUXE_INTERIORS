@@ -171,9 +171,7 @@
     <header class="h-24 flex items-center justify-between px-10 z-30 shrink-0">
         <div>
             <h2 class="text-2xl font-bold font-display text-slate-800 tracking-tight">Đơn hàng</h2>
-            <p class="text-sm text-slate-500 font-medium mt-1">
-                Quản lý, lọc và theo dõi toàn bộ đơn hàng trên hệ thống.
-            </p>
+             
         </div>
 
         <div class="flex items-center gap-4">

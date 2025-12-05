@@ -75,10 +75,9 @@ public class DashboardReportPdfUtil {
         // Top sản phẩm bán chạy (Top 5)
         List<AdminStatsDAO.TopProduct> topProducts = stats.getTopSellingProducts(5);
 
-        // Sản phẩm tồn kho thấp (ngưỡng 5)
         // Sản phẩm tồn kho thấp (ngưỡng 5) - dùng ProductDAO giống AdminDashboardServlet
-ProductDAO pdao = new ProductDAO();
-List<Product> lowStockProducts = pdao.getLowStockProducts(5);
+        ProductDAO pdao = new ProductDAO();
+        List<Product> lowStockProducts = pdao.getLowStockProducts(5);
 
         // ===================== 2. TẠO PDF =====================
 
@@ -88,11 +87,12 @@ List<Product> lowStockProducts = pdao.getLowStockProducts(5);
         PdfWriter.getInstance(document, baos);
         document.open();
 
-        // Fonts
-        Font titleFont   = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
-        Font sectionFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
-        Font normalFont  = FontFactory.getFont(FontFactory.HELVETICA, 10);
-        Font boldFont    = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+        // ===== Fonts: dùng font Unicode để hiển thị đúng tiếng Việt =====
+        FontSet fonts = createFontSet();
+        Font titleFont   = fonts.title;
+        Font sectionFont = fonts.section;
+        Font normalFont  = fonts.normal;
+        Font boldFont    = fonts.bold;
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
@@ -321,6 +321,52 @@ List<Product> lowStockProducts = pdao.getLowStockProducts(5);
 
         document.close();
         return baos.toByteArray();
+    }
+
+    // ===================== FontSet dùng chung =====================
+
+    /**
+     * Nhóm font sử dụng cho báo cáo Dashboard.
+     */
+    private static class FontSet {
+        Font title;
+        Font section;
+        Font normal;
+        Font bold;
+    }
+
+    /**
+     * Tạo bộ font Unicode cho PDF.
+     *  - Trên Windows: dùng C:/Windows/Fonts/arial.ttf
+     *  - Nếu cần deploy trên Linux/server khác: đổi lại đường dẫn font cho phù hợp.
+     */
+    private static FontSet createFontSet() {
+        FontSet fs = new FontSet();
+        BaseFont bfUnicode = null;
+
+        try {
+            // Đường dẫn font trên Windows.
+            // Nếu chạy trên Linux, có thể đổi thành: "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+            String fontPath = "C:/Windows/Fonts/arial.ttf";
+            bfUnicode = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+        } catch (Exception ex) {
+            // ignore, sẽ fallback phía dưới
+        }
+
+        if (bfUnicode != null) {
+            fs.title   = new Font(bfUnicode, 16, Font.BOLD, BaseColor.BLACK);
+            fs.section = new Font(bfUnicode, 12, Font.BOLD, BaseColor.BLACK);
+            fs.normal  = new Font(bfUnicode, 10, Font.NORMAL, BaseColor.BLACK);
+            fs.bold    = new Font(bfUnicode, 10, Font.BOLD, BaseColor.BLACK);
+        } else {
+            // Fallback – vẫn chạy nhưng nếu font không hỗ trợ Unicode thì có thể vẫn lỗi dấu
+            fs.title   = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            fs.section = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            fs.normal  = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            fs.bold    = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+        }
+
+        return fs;
     }
 
     // ============ helper thêm cell =============
